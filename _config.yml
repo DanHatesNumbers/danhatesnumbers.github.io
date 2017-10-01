@@ -6,13 +6,13 @@
 # 'jekyll serve'. If you change this file, please restart the server process.
 
 # Site settings
-title: Dan Wright
+title: Dan Murphy
 description: > # this means to ignore newlines until "baseurl:"
     Notes on Technology and Security
 baseurl: "" # the subpath of your site, e.g. /blog
-url: "https://danwright91.github.io" # the base hostname & protocol for your site
+url: "https://danhatesnumbers.github.io" # the base hostname & protocol for your site
 twitter_username: DanHatesNumbers
-github_username:  DanWright91
+github_username:  DanHatesNumbers
 
 # Build settings
 markdown: kramdown
