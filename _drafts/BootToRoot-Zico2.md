@@ -98,5 +98,76 @@ Nmap done: 1 IP address (1 host up) scanned in 8.00 seconds
 
 ~~~
 
-At this point, I thought the RPCBind service might be a red herring, so I left my investigation of it there, but made a note to come back to it later if I got stuck.
+At this point, I thought the RPCBind service might be a red herring, so I left my investigation of it there, but made a note to come back to it later if I got stuck. Next I turned my attention to the Apache server running on port 80.
 
+![Zico2 Homepage on port 80]({{ site.url}}/assets/Zico2/ZicoShopHomepage.png)
+
+After trying out the links, I ended up on `http://192.168.56.101/view.php?page=tools.html`, which is an image gallery with some lightbox functionality. The query parameter in the URL, `page=tools.html` has me suspicious that this PHP script would be vulnerable to [Path Traversal](http://cwe.mitre.org/data/definitions/22.html), allowing me to read arbitrary files from disk.
+
+![Zico2 Portfolio page]({{ site.url}}/assets/Zico2/ZicoShopPortfolio.png)
+
+Sure enough, by changing the query parameter from `page=tools.html` to `page=../../../etc/passwd` resulted in me being able to read `/etc/passwd`
+
+![Zico2 Portfolio page path traversal demonstration]({{ site.url}}/assets/Zico2/Zico2PathTraversalPOC.png)
+
+At this point, I wanted to map out any other URLs that might be available on this web server, so I ran [DIRB](https://tools.kali.org/web-applications/dirb) with the provided common wordlist.
+
+~~~
+~ # ❯❯❯ dirb http://192.168.56.101 /usr/share/dirb/wordlists/common.txt
+
+-----------------
+DIRB v2.22    
+By The Dark Raver
+-----------------
+
+START_TIME: Sun Dec 17 17:04:36 2017
+URL_BASE: http://192.168.56.101/
+WORDLIST_FILES: /usr/share/dirb/wordlists/common.txt
+
+-----------------
+
+GENERATED WORDS: 4612                                                     
+
+---- Scanning URL: http://192.168.56.101/ ----
++ http://192.168.56.101/cgi-bin/ (CODE:403|SIZE:290)                      
+==> DIRECTORY: http://192.168.56.101/css/                                 
+==> DIRECTORY: http://192.168.56.101/dbadmin/                             
+==> DIRECTORY: http://192.168.56.101/img/                                 
++ http://192.168.56.101/index (CODE:200|SIZE:7970)                        
++ http://192.168.56.101/index.html (CODE:200|SIZE:7970)                   
+==> DIRECTORY: http://192.168.56.101/js/                                  
++ http://192.168.56.101/LICENSE (CODE:200|SIZE:1094)                      
++ http://192.168.56.101/package (CODE:200|SIZE:789)                       
++ http://192.168.56.101/server-status (CODE:403|SIZE:295)                 
++ http://192.168.56.101/tools (CODE:200|SIZE:8355)                        
+==> DIRECTORY: http://192.168.56.101/vendor/                              
++ http://192.168.56.101/view (CODE:200|SIZE:0)                            
+                                                                          
+---- Entering directory: http://192.168.56.101/css/ ----
+(!) WARNING: Directory IS LISTABLE. No need to scan it.                   
+    (Use mode '-w' if you want to scan it anyway)
+                                                                          
+---- Entering directory: http://192.168.56.101/dbadmin/ ----
+(!) WARNING: Directory IS LISTABLE. No need to scan it.                   
+    (Use mode '-w' if you want to scan it anyway)
+                                                                          
+---- Entering directory: http://192.168.56.101/img/ ----
+(!) WARNING: Directory IS LISTABLE. No need to scan it.                   
+    (Use mode '-w' if you want to scan it anyway)
+                                                                          
+---- Entering directory: http://192.168.56.101/js/ ----
+(!) WARNING: Directory IS LISTABLE. No need to scan it.                   
+    (Use mode '-w' if you want to scan it anyway)
+                                                                          
+---- Entering directory: http://192.168.56.101/vendor/ ----
+(!) WARNING: Directory IS LISTABLE. No need to scan it.                   
+    (Use mode '-w' if you want to scan it anyway)
+                                                                          
+-----------------
+END_TIME: Sun Dec 17 17:04:39 2017
+DOWNLOADED: 4612 - FOUND: 8
+~~~
+
+The dbadmin folder immediate caught my attention. Browsing to `http://192.168.56.101/dbadmin` provides a listable directory with a PHP script inside called test_db.php, which is a copy of phpLiteAdmin v1.9.3. A bit of googling showed this to be a PHP interface for adminstering SQLite databases and the version running on this VM was from early 2013.
+
+![phpLiteAdmin Login page]({{ site.url}}/assets/Zico2/Zico2PhpLiteAdminLogin.png)
