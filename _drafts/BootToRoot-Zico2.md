@@ -52,7 +52,7 @@ Service detection performed. Please report any incorrect results at https://nmap
 Nmap done: 1 IP address (1 host up) scanned in 26.96 seconds                                      
 ~~~
 
-I wasn't really sure what the RPCbind service was for, so I spent a little while investigating it. Turns out that RPCbind is common used for services like NFS, so I wanted to see if that was a viable attack vector. After a bit of googling for information, I found the Nmap script for enumerating RPC, 'rpcinfo'. I also found the rpcinfo from some googling which needed me to install the nfs-common package.
+I wasn't really sure what the RPCbind service was for, so I spent a little while investigating it. Turns out that RPCbind is common used for services like NFS, so I wanted to see if that was a viable attack vector. After a bit of googling for information, I found the Nmap script for enumerating RPC, 'rpcinfo'. I also found a separate tool called rpcinfo from some googling which needed me to install the nfs-common package.
 
 ~~~
 ~/b/zico2 # ❯❯❯ nmap --script rpcinfo 192.168.56.101                     
@@ -100,15 +100,15 @@ At this point, I thought the RPCBind service might be a red herring, so I left m
 
 ![Zico2 Homepage on port 80]({{ site.url}}/assets/Zico2/ZicoShopHomepage.png)
 
-After trying out the links, I ended up on `http://192.168.56.101/view.php?page=tools.html`, which is an image gallery with some lightbox functionality. The query parameter in the URL, `page=tools.html` has me suspicious that this PHP script would be vulnerable to [Path Traversal](http://cwe.mitre.org/data/definitions/22.html), allowing me to read arbitrary files from disk.
+After trying out the links, I ended up on `http://192.168.56.101/view.php?page=tools.html`, which is an image gallery with some lightbox functionality. The query parameter in the URL, `page=tools.html` caught my attention and I wondered if this PHP script would be vulnerable to a [Path Traversal](http://cwe.mitre.org/data/definitions/22.html) attack, allowing me to read files from disk.
 
 ![Zico2 Portfolio page]({{ site.url}}/assets/Zico2/ZicoShopPortfolio.png)
 
-Sure enough, by changing the query parameter from `page=tools.html` to `page=../../../etc/passwd` resulted in me being able to read `/etc/passwd`
+Sure enough, by changing the query parameter from `page=tools.html` to `page=../../../etc/passwd`, I was able to read the `/etc/passwd` file and enumerate the system users.
 
 ![Zico2 Portfolio page path traversal demonstration]({{ site.url}}/assets/Zico2/Zico2PathTraversalPOC.png)
 
-At this point, I wanted to map out any other URLs that might be available on this web server, so I ran [DIRB](https://tools.kali.org/web-applications/dirb) with the provided common wordlist.
+Next I wanted to see if there were any other interesting paths being served by Apache, so I ran a tool called [DIRB](https://tools.kali.org/web-applications/dirb) with the provided common wordlist. Dirb essentially takes a wordlist that you provide and makes HTTP requests with a given base URL to determine if anything is hosted at that path.
 
 ~~~
 ~ # ❯❯❯ dirb http://192.168.56.101 /usr/share/dirb/wordlists/common.txt
@@ -166,7 +166,7 @@ END_TIME: Sun Dec 17 17:04:39 2017
 DOWNLOADED: 4612 - FOUND: 8
 ~~~
 
-The dbadmin folder immediate caught my attention. Browsing to `http://192.168.56.101/dbadmin` provides a listable directory with a PHP script inside called test_db.php, which is a copy of phpLiteAdmin v1.9.3. A bit of googling showed this to be a PHP interface for adminstering SQLite databases and the version running on this VM was from early 2013.
+Most of those directories aren't particularly surprising and contained JS library code and resources for the site's styling and functionality. But what's that `dbadmin` folder? Browsing to `http://192.168.56.101/dbadmin` returns a listable directory with a PHP script inside called test_db.php, which is a copy of phpLiteAdmin v1.9.3. A bit of googling showed this to be a PHP interface for adminstering SQLite databases and the version running on this VM was from early 2013.
 
 ![phpLiteAdmin Login page]({{ site.url}}/assets/Zico2/Zico2PhpLiteAdminLogin.png)
 
