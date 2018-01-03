@@ -3,9 +3,7 @@ layout: post
 title: Boot To Root Walkthrough - Zico2
 ---
 
-I recently volunteered for an initiative my employer is running called Security Champions, people working in tech teams who have a good understanding of security issues and best practises to act as advocates for security throughout the development lifecycle. After our initial sessions, the AppSec team who organised the event asked if anyone had any ideas for demos or topics they'd like to talk about for the next session.
-
-As part of the day's activities, we'd split into small teams to tackle different vulnerabilities in [DVWA](http://www.dvwa.co.uk/). My team picked Command Injection, but as we worked through the different levels of input filtering, I explained we might be able to turn command injection into a reverse shell, which surprised the rest of my team. This got me thinking about how I could demonstrate how several vulnerabilities could be used together to totally compromise a server, which lead to me working on the Zico2 VM on [VulnHub](https://www.vulnhub.com).
+As part of an effort to learn more about security, I've decided to start working on Boot2Root VM's from [VulnHub](https://vulnhub.com). I've always felt that documenting the steps you have taken to achieve something and then writing those notes up into something that past you would have appreciated as a learning resource is a great way of clarifying your knowledge and also honing your technical writing skills. As this is primarily a personal learning exercise, I will also be documenting the main things I have learned by tackling each VM.
 
 For this walkthrough, I have a Kali VM with a pair of NICs; one in NAT mode and another on an internal network with no host connection on the 192.168.56.1/24 subnet. I also have the Zico2 VM on the same internal network on the 192.168.56.1/24 subnet and I've disabled the default NAT NIC.
 
