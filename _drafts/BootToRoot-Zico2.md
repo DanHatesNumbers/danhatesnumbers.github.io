@@ -332,3 +332,9 @@ less /root/flag.txt
 #
 #
 ~~~
+
+So what did I learn from this?
+
+Firstly, I learned that combining Path Traversal with the ability to write files to disk can give you Remote Code Execution. This seems fairly obvious in hindsight, but it didn't occur to me until now.
+
+I also learned a lot about how Metasploit works, how to create payloads using MSFVenom and how to use a Meterpreter shell.
