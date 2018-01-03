@@ -5,9 +5,9 @@ title: Boot To Root Walkthrough - Zico2
 
 As part of an effort to learn more about security, I've decided to start working on Boot2Root VM's from [VulnHub](https://vulnhub.com). I've always felt that documenting the steps you have taken to achieve something and then writing those notes up into something that past you would have appreciated as a learning resource is a great way of clarifying your knowledge and also honing your technical writing skills. As this is primarily a personal learning exercise, I will also be documenting the main things I have learned by tackling each VM.
 
-For this walkthrough, I have a Kali VM with a pair of NICs; one in NAT mode and another on an internal network with no host connection on the 192.168.56.1/24 subnet. I also have the Zico2 VM on the same internal network on the 192.168.56.1/24 subnet and I've disabled the default NAT NIC.
+For this walkthrough, I have a Kali VM with a pair of NICs; one in NAT mode and another on an internal network with no host connection on the 192.168.56.1/24 subnet. I also have the Zico2 VM on the same internal network on the 192.168.56.1/24 subnet and I've disabled the default NAT NIC. This is to ensure that the vulnerable host is isolated from my home network, while allowing my Kali VM to reach the internet for software updates and downloading exploit code. Eventually, I want to build a truly isolated lab environment based on da_667's excellent book ["Building Virtual Machine Labs"](https://leanpub.com/avatar) for this sort of work.
 
-To quickly determine the DHCP lease for the VM, I ran Nmap with `nmap -sn 192.168.56.1/24` to perform a ping sweep of my testing subnet and correlated the hosts that responded to the pings with the MAC address of the NIC attached to the target VM, which had acquired a lease for 192.168.56.101.
+This BTR VM is configured to acquire a DHCP lease, so to quickly determine what IP address it has acquired, I ran Nmap with `nmap -sn 192.168.56.1/24` to perform a ping sweep of my testing subnet. The output of that Nmap scan contains the MAC addresses of each host that responded to the ping sweep, so I correlated that list with the MAC address of the NIC attached to the target VM, and found that it had acquired a lease for 192.168.56.101.
 
 ~~~
 ~/b/zico2 # ❯❯❯ nmap -sn 192.168.56.1/24                              
