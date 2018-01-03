@@ -170,7 +170,7 @@ Most of those directories aren't particularly surprising and contained JS librar
 
 ![phpLiteAdmin Login page]({{ site.url}}/assets/Zico2/Zico2PhpLiteAdminLogin.png)
 
-Strangely, the login page presented only asks for a password. As it turns out, it's using an easily guessable default password of 'admin', so I didn't even need to fire up a tool like THC Hydra or Ncrack. The homepage even warns you if you're using the default password!
+Strangely, the login page presented only asks for a password. As it turns out, it's using an easily guessable default password of 'admin', so I didn't need to spend time mounting a dictionary attack against the login page. The homepage even warns you if you're using the default password!
 
 ![phpLiteAdmin Homepage]({{ site.url}}/assets/Zico2/Zico2PhpLiteAdminHomepage.png)
 
@@ -181,7 +181,7 @@ The default database, 'test_users', contained two rows:
 | root | 653F4B285089453FE00E2AAFAC573414 | 1  |
 | zico | 96781A607F4E9F5F423AC01F0DAB0EBD | 2  |
 
-I ran the 'pass' value through the hashid tool, to confirm my suspicion that those values might be MD5 hashes.
+I ran the 'pass' value through a tool called hashid, to confirm my suspicion that those values might be MD5 hashes.
 
 ~~~
 ~ # ❯❯❯ hashid 653F4B285089453FE00E2AAFAC573414   
@@ -206,11 +206,11 @@ Analyzing '653F4B285089453FE00E2AAFAC573414'
 [+] RAdmin v2.x 
 ~~~
 
-With MD5 not ruled out, I tried submitting the two hashes to [Crackstation](https://crackstation.net) to see if either hash was contained in their 15 billion row lookup table and got matches back for both. The hashed root password was '34kroot34' and the hashed password for zico was 'zico2215@'. I thought maybe these might be reused for SSH users, so I tried using both sets of credentials to login over SSH, but no luck there.
+With MD5 still a possibility, I tried submitting the two hashes to [Crackstation](https://crackstation.net) to see if either hash was contained in their 15 billion row lookup table and got matches back for both. The hashed root password was '34kroot34' and the hashed password for zico was 'zico2215@'. I thought maybe these might be reused for SSH users, so I tried using both sets of credentials to login over SSH, but no luck there.
 
-With no other ideas of how to use the credentials, I started looking for known vulnerabilities in the version of phpLiteAdmin I was investigating. That yielded a promising result on [Exploit DB](https://www.exploit-db.com/exploits/24044/) that allowed PHP Remote Code Injection, by allowing a user to control the file extension and write arbitrary data to a file, surrounded by some SQLite file metadata. I tried the proof of concept in the Exploit DB report, which calls the phpinfo() function to dump a lot of useful PHP configuration data.
+With no other ideas of how to use the credentials, I started looking for known vulnerabilities in the version of phpLiteAdmin I was investigating. That yielded a promising result on [Exploit DB](https://www.exploit-db.com/exploits/24044/) that allowed PHP Remote Code Injection, by allowing a user to control the file extension for a database name. By writing a row to this database containing some PHP, you can create a script that will be executed by Apache's PHP module, surrounded by some SQLite file metadata, which will be treated as plain text content. I tried the proof of concept in the Exploit DB report, which calls the phpinfo() function to dump a lot of useful PHP configuration data.
 
-Using the path traversal vulnerability in the view.php script I found earlier, I was able to browse to the directory that stored the site's databases and execute the PHP script I just injected. It hadn't occured to me before that combining the ability to write something to a file with path traversal could lead to Remote Code Execution, but it seems obvious now that I've actually go through the process myself!
+Using the path traversal vulnerability in the view.php script I found earlier, I was able to browse to the directory that stored the site's databases and execute the PHP script I just created.
 
 ![phpLiteAdmin PHP Remote Code Injection 1]({{ site.url}}/assets/Zico2/Zico2PHPInjection1.png)
 
@@ -218,9 +218,9 @@ Using the path traversal vulnerability in the view.php script I found earlier, I
 
 ![phpLiteAdmin PHP Remote Code Injection 3]({{ site.url}}/assets/Zico2/Zico2PHPInjection3.png)
 
-Having managed to get RCE, I spent a while trying to get a PHP web shell or Metasploit's PHP Reverse TCP payload to work, but couldn't get anywhere useful. So then I started thinking about other ways I could exploit this to get a reverse shell. The PHP Info page disclosed the output of `uname -a`, so I knew the target VM was running Ubuntu 64 bit.
+Now that I had achieved Remote Code Execution, I spent a while trying to get a PHP web shell or Metasploit's PHP Reverse TCP payload to work, but couldn't get anywhere useful. So then I started thinking about other ways I could exploit this to get a reverse shell. The PHP Info page disclosed the output of `uname -a`, so I knew the target VM was running Ubuntu 64 bit.
 
-After a while, I realised I could use the RCE to execute wget to download a binary reverse TCP payload from Metasploit, hosted on a web server on my Kali VM.
+After a while, I came to the conclusion that I could use the PHP RCE exploit to get the target to download and execute a binary payload, which I could host on my Kali VM using a simple Python HTTP server. Using Metasploit, I could build a binary payload to preform a reverse TCP connection to establish a remote shell.
 
 So first, the Metasploit payload. I generated this using msfvenom, which is the standalone tool in the Metasploit framework for payload generation.
 
