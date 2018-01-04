@@ -1,6 +1,7 @@
 ---
 layout: post
 title: Building a Certificate Authority in Rust - Part 0
+categories: QuickLime PKI
 ---
 
 Recently, I've been playing with Rust and the Rocket crate to simultaneously learn some more Rust and also because I find working with HTTP services interesting. After spending a bit of time getting a Hello World running, I tried expanding it with a route that accepts a POST request with a JSON array of numbers and returns the sum of that array. I was struggling with getting Serde to work with a list of `i32`s, turns out I was using a slice when I should have been using a Vec. But once I'd got that figured out, I started thinking about what I could build that would be both non-trivial and that I would find interesting.

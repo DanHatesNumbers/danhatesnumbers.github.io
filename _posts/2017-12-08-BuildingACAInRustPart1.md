@@ -1,6 +1,7 @@
 ---
 layout: post
 title: Building a Certificate Authority in Rust - Part 1
+categories: QuickLime PKI
 ---
 
 In this post, I'm going to be exploring the core functionality of the Certificate Authority (which I'm going to be calling Quicklime), explaining what I'm planning on using as a central data store and what questions I don't yet have answers to. If you've not already done so, I suggest reading the [first part of this series]({{ site.baseurl }}{% post_url 2017-10-21-BuildingACAInRustPart0 %}), where I describe why I want to build a Certificate Authority in the first place and the basic functionality I want to implement.

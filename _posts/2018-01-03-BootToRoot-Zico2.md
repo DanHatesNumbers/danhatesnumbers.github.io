@@ -1,6 +1,7 @@
 ---
 layout: post
 title: Boot To Root Walkthrough - Zico2
+category: Boot2Root
 ---
 
 As part of an effort to learn more about security, I've decided to start working on Boot2Root VM's from [VulnHub](https://vulnhub.com). I've always felt that documenting the steps you have taken to achieve something and then writing those notes up into something that past you would have appreciated as a learning resource is a great way of clarifying your knowledge and also honing your technical writing skills. As this is primarily a personal learning exercise, I will also be documenting the main things I have learned by tackling each VM.
