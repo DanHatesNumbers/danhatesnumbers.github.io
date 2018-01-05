@@ -99,15 +99,15 @@ Nmap done: 1 IP address (1 host up) scanned in 8.00 seconds
 
 At this point, I thought the RPCBind service might be a red herring, so I left my investigation of it there, but made a note to come back to it later if I got stuck. Next I turned my attention to the Apache server running on port 80.
 
-![Zico2 Homepage on port 80]({{ site.url}}/assets/Zico2/ZicoShopHomepage.png)
+[![Zico2 Homepage on port 80]({{ site.url}}/assets/Zico2/ZicoShopHomepage.png)]({{ site.url}}/assets/Zico2/ZicoShopHomepage.png)
 
 After trying out the links, I ended up on `http://192.168.56.101/view.php?page=tools.html`, which is an image gallery with some lightbox functionality. The query parameter in the URL, `page=tools.html` caught my attention and I wondered if this PHP script would be vulnerable to a [Path Traversal](http://cwe.mitre.org/data/definitions/22.html) attack, allowing me to read files from disk.
 
-![Zico2 Portfolio page]({{ site.url}}/assets/Zico2/ZicoShopPortfolio.png)
+[![Zico2 Portfolio page]({{ site.url}}/assets/Zico2/ZicoShopPortfolio.png)]({{ site.url}}/assets/Zico2/ZicoShopPortfolio.png)
 
 Sure enough, by changing the query parameter from `page=tools.html` to `page=../../../etc/passwd`, I was able to read the `/etc/passwd` file and enumerate the system users.
 
-![Zico2 Portfolio page path traversal demonstration]({{ site.url}}/assets/Zico2/Zico2PathTraversalPOC.png)
+[![Zico2 Portfolio page path traversal demonstration]({{ site.url}}/assets/Zico2/Zico2PathTraversalPOC.png)]({{ site.url}}/assets/Zico2/Zico2PathTraversalPOC.png)
 
 Next I wanted to see if there were any other interesting paths being served by Apache, so I ran a tool called [DIRB](https://tools.kali.org/web-applications/dirb) with the provided common wordlist. Dirb essentially takes a wordlist that you provide and makes HTTP requests with a given base URL to determine if anything is hosted at that path.
 
@@ -169,11 +169,11 @@ DOWNLOADED: 4612 - FOUND: 8
 
 Most of those directories aren't particularly surprising and contained JS library code and resources for the site's styling and functionality. But what's that `dbadmin` folder? Browsing to `http://192.168.56.101/dbadmin` returns a listable directory with a PHP script inside called test_db.php, which is a copy of phpLiteAdmin v1.9.3. A bit of googling showed this to be a PHP interface for adminstering SQLite databases and the version running on this VM was from early 2013.
 
-![phpLiteAdmin Login page]({{ site.url}}/assets/Zico2/Zico2PhpLiteAdminLogin.png)
+[![phpLiteAdmin Login page]({{ site.url}}/assets/Zico2/Zico2PhpLiteAdminLogin.png)]({{ site.url}}/assets/Zico2/Zico2PhpLiteAdminLogin.png)
 
 Strangely, the login page presented only asks for a password. As it turns out, it's using an easily guessable default password of 'admin', so I didn't need to spend time mounting a dictionary attack against the login page. The homepage even warns you if you're using the default password!
 
-![phpLiteAdmin Homepage]({{ site.url}}/assets/Zico2/Zico2PhpLiteAdminHomepage.png)
+[![phpLiteAdmin Homepage]({{ site.url}}/assets/Zico2/Zico2PhpLiteAdminHomepage.png)]({{ site.url}}/assets/Zico2/Zico2PhpLiteAdminHomepage.png)
 
 The default database, 'test_users', contained two rows:
 
@@ -209,15 +209,15 @@ Analyzing '653F4B285089453FE00E2AAFAC573414'
 
 With MD5 still a possibility, I tried submitting the two hashes to [Crackstation](https://crackstation.net) to see if either hash was contained in their 15 billion row lookup table and got matches back for both. The hashed root password was '34kroot34' and the hashed password for zico was 'zico2215@'. I thought maybe these might be reused for SSH users, so I tried using both sets of credentials to login over SSH, but no luck there.
 
-With no other ideas of how to use the credentials, I started looking for known vulnerabilities in the version of phpLiteAdmin I was investigating. That yielded a promising result on [Exploit DB](https://www.exploit-db.com/exploits/24044/) that allowed PHP Remote Code Injection, by allowing a user to control the file extension for a database name. By writing a row to this database containing some PHP, you can create a script that will be executed by Apache's PHP module, surrounded by some SQLite file metadata, which will be treated as plain text content. I tried the proof of concept in the Exploit DB report, which calls the phpinfo() function to dump a lot of useful PHP configuration data.
+With no other ideas of how to use the credentials, I started looking for known vulnerabilities in the version of phpLiteAdmin I was investigating. That yielded a promising result on [Exploit DB](https://www.exploit-db.com/exploits/24044/) that allowed PHP Remote Code Injection, by allowing a user to control the file extension for a database name. By writing a row to this database containing some PHP, you can create a script that will be executed by Apache's PHP module, surrounded by some SQLite file metadata, which will be treated as plain text content. I tried the proof of concept in the Exploit DB report, which calls the `phpinfo()` function to dump a lot of useful PHP configuration data.
 
 Using the path traversal vulnerability in the view.php script I found earlier, I was able to browse to the directory that stored the site's databases and execute the PHP script I just created.
 
-![phpLiteAdmin PHP Remote Code Injection 1]({{ site.url}}/assets/Zico2/Zico2PHPInjection1.png)
+[![phpLiteAdmin PHP Remote Code Injection 1]({{ site.url}}/assets/Zico2/Zico2PHPInjection1.png)]({{ site.url}}/assets/Zico2/Zico2PHPInjection1.png)
 
-![phpLiteAdmin PHP Remote Code Injection 2]({{ site.url}}/assets/Zico2/Zico2PHPInjection2.png)
+[![phpLiteAdmin PHP Remote Code Injection 2]({{ site.url}}/assets/Zico2/Zico2PHPInjection2.png)]({{ site.url}}/assets/Zico2/Zico2PHPInjection2.png)
 
-![phpLiteAdmin PHP Remote Code Injection 3]({{ site.url}}/assets/Zico2/Zico2PHPInjection3.png)
+[![phpLiteAdmin PHP Remote Code Injection 3]({{ site.url}}/assets/Zico2/Zico2PHPInjection3.png)]({{ site.url}}/assets/Zico2/Zico2PHPInjection3.png)
 
 Now that I had achieved Remote Code Execution, I spent a while trying to get a PHP web shell or Metasploit's PHP Reverse TCP payload to work, but couldn't get anywhere useful. So then I started thinking about other ways I could exploit this to get a reverse shell. The PHP Info page disclosed the output of `uname -a`, so I knew the target VM was running Ubuntu 64 bit.
 
