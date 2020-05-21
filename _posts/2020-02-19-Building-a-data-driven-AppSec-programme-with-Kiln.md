@@ -21,7 +21,7 @@ As a security engineer, I want to be able to ask questions like:
 
 With those questions in mind, I want to introduce you to Kiln.
 
-The value proposition for Kiln is that it makes it easy to run open source security tools, while also collecting data from those tools to allow you to analyse the security of your applications. You can then used the insights you've gained from analysing the data Kiln provides to drive better decision making about where to focus your effort and resources.
+The value proposition for Kiln is that it makes it easy to run open source security tools, while also collecting data from those tools to allow you to analyse the security of your applications. You can then use the insights you've gained from analysing the data Kiln provides to drive better decision making about where to focus your effort and resources.
 
 The following video demonstrates how a user can use the Kiln CLI tool to scan the dependencies of a Ruby application, which uses Bundler-Audit under the hood. These findings are then parsed and processed and sent to Slack as messages to a designated channel. I used an interactive terminal to demonstrate the CLI, but where this really shines is in a CI pipeline.
 
