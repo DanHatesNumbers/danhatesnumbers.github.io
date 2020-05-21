@@ -3,7 +3,7 @@ layout: post
 title: Building a Data-driven AppSec Programme with Kiln
 ---
 
-This post is based on a talk I gave at BSides 2020 on an open source security tooling project I've been working on called Kiln.
+This post is based on a talk I gave at BSides Leeds 2020 on an open source security tooling project I've been working on called Kiln.
 
 To set the scene, I'm going to start by talking about CI pipelines. Most of the CI pipelines I've seen have performed various types of testing; linting, unit testing, UI testing, maybe some functional testing. Some teams will run security tools as part oftheir manual code reviews, perhaps using something like Yarn Audit for checking that their JS dependencies don't have known vulnerabilities in them. More mature CI pipelines might be running security tooling as part of the pipeline itself. At SimplyBusiness, we have tools like Bundler Audit, Rubocop (a linting tool with some security lints) and Brakeman (A Ruby-on-Rails static code analysis tool) in our Ruby app pipelines.
 
