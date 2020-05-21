@@ -4,4 +4,4 @@ title: About
 permalink: /about/
 ---
 
-I'm a software engineer from the UK with an interest in security. By day I build automated test suites in JS and help make software better. In my own time, I enjoy locksport, learning Rust and building stuff, both digital and physical.
+Hi, I'm Dan! I'm an Application Security Engineer from the UK, where I mostly spend my time working on the [Kiln project]({% post_url 2020-02-19-Building-a-data-driven-AppSec-programme-with-Kiln %}) and helping engineers write more secure software. Prior to working in InfoSec, I was a Quality Engineer and Software Engineer. In my spare time I enjoy Baking, D&D and Locksport.
