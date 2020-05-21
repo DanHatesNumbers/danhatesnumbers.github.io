@@ -65,7 +65,7 @@ To answer that question, I ran Bundler-audit using the Kiln CLI on every commit 
 
 The approach I used to answer that question isn't the only way you can leverage the data that Kiln provides. My approach was to analyse data in a batched fashion, but there's no reason that same analysis couldn't be performed in a streaming fashion and be used to power a live dashboard. Additionally, while Jupyter notebooks are great for interactive analysis, that same analysis could be packaged as a single Python script, to deliver the same results without requiring someone to setup Jupyter and run each cell individually.
 
-Kiln is still a relatively young project, so what does the future hold? All of Kiln's development is trakced using Github issues, which you can find at [https://github.com/simplybusiness/Kiln/issues](https://github.com/simplybusiness/Kiln/issues). At the time of writing, some of the highlights include:
+Kiln is still a relatively young project, so what does the future hold? All of Kiln's development is tracked using Github issues, which you can find at [https://github.com/simplybusiness/Kiln/issues](https://github.com/simplybusiness/Kiln/issues). At the time of writing, some of the highlights include:
 
 * Building a reporting dashboard, to enable you to quickly see things like what projects are using what tools, in what environments and how often are they run?
 * Adding tools for other languages, next up being Python and Javascript. Right now Kiln is at it's MVP, which only supports Ruby applications.
